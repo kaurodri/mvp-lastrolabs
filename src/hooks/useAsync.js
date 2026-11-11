@@ -1,6 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 
-/** Executa uma função assíncrona ao montar e expõe { data, loading, error, reload }. */
+/**
+ * Executa uma função assíncrona ao montar e expõe
+ * { data, loading, error, reload, setData }.
+ * `fn` precisa ter identidade estável (função fora do componente ou useCallback).
+ * `setData` aceita um valor ou uma função (atual) => novo, para atualizar sem recarregar.
+ */
 export default function useAsync(fn, initialData = null) {
   const [state, setState] = useState({ data: initialData, loading: true, error: null });
 
@@ -17,5 +22,11 @@ export default function useAsync(fn, initialData = null) {
 
   useEffect(() => reload(), [reload]);
 
-  return { ...state, reload };
+  const setData = useCallback(
+    (updater) =>
+      setState((s) => ({ ...s, data: typeof updater === 'function' ? updater(s.data) : updater })),
+    [],
+  );
+
+  return { ...state, reload, setData };
 }
