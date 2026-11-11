@@ -6,6 +6,7 @@ import ConfirmDialog from '../ui/ConfirmDialog.jsx';
 import { useToast } from '../ui/Toast.jsx';
 import { HOME } from '../../utils/routes.js';
 import Sidebar from './Sidebar.jsx';
+import SplashScreen from './SplashScreen.jsx';
 
 /**
  * Área logada: só entra quem tem sessão com o perfil certo.
@@ -13,7 +14,7 @@ import Sidebar from './Sidebar.jsx';
  * Celular: barra no topo (conteúdo começa 56px abaixo). Desktop: barra lateral de 72px.
  */
 export default function ProtectedLayout({ perfil }) {
-  const { session, logout } = useAuth();
+  const { session, logout, splash, dismissSplash } = useAuth();
   const notify = useToast();
   const [confirmReset, setConfirmReset] = useState(false);
   const [dataVersion, setDataVersion] = useState(0);
@@ -34,6 +35,7 @@ export default function ProtectedLayout({ perfil }) {
 
   return (
     <div className="min-h-screen">
+      {splash && <SplashScreen onDone={dismissSplash} />}
       <Sidebar session={session} onLogout={logout} onSettings={() => setConfirmReset(true)} />
       <main className="pt-14 md:pl-[72px] md:pt-0">
         <div key={dataVersion} className="mx-auto w-full max-w-[1440px] px-4 py-5 sm:px-6 sm:py-7 lg:px-10 lg:py-8 2xl:px-14">

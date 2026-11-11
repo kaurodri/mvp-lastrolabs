@@ -6,7 +6,7 @@ import PasswordInput from '../components/auth/PasswordInput.jsx';
 import Button from '../components/ui/Button.jsx';
 import TextInput from '../components/ui/TextInput.jsx';
 import { useToast } from '../components/ui/Toast.jsx';
-import { useAuth } from '../context/AuthContext.jsx';
+import { readRemembered, useAuth } from '../context/AuthContext.jsx';
 import { HOME } from '../utils/routes.js';
 import logoMarkUrl from '../assets/logo-mark.svg';
 
@@ -18,8 +18,10 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const notify = useToast();
 
-  const [perfil, setPerfil] = useState('medico');
-  const [email, setEmail] = useState('');
+  // Se a pessoa marcou "Lembrar" antes, o perfil e o e-mail já vêm preenchidos (a senha nunca é guardada).
+  const [remembered] = useState(readRemembered);
+  const [perfil, setPerfil] = useState(remembered?.perfil ?? 'medico');
+  const [email, setEmail] = useState(remembered?.email ?? '');
   const [senha, setSenha] = useState('');
   const [lembrar, setLembrar] = useState(true);
   const [error, setError] = useState(null);
