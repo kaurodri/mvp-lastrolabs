@@ -10,6 +10,7 @@ const SmallRight = (p) => <ChevronRightIcon className="h-3.5 w-3.5" {...p} />;
  * No celular a contagem fica numa linha própria e os demais blocos centralizados.
  */
 export default function Pagination({
+  noun = 'pacientes',
   page,
   totalPages,
   totalCount,
@@ -26,7 +27,7 @@ export default function Pagination({
     <nav className="mt-5 flex flex-wrap items-center justify-center gap-x-6 gap-y-3 sm:justify-between" aria-label="Paginação">
       <p className="w-full text-center text-sm text-slate-500 sm:w-auto sm:text-left">
         Mostrando <span className="font-medium text-slate-700">{from}–{to}</span> de{' '}
-        <span className="font-medium text-slate-700">{totalCount}</span> pacientes
+        <span className="font-medium text-slate-700">{totalCount}</span> {noun}
       </p>
 
       <div className="flex items-center gap-1.5">
