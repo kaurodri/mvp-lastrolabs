@@ -1,40 +1,63 @@
-import { useEffect, useState } from 'react';
-import logoWhiteUrl from '../../assets/logo-lastro-labs-white.svg';
-
-const SHOW_MS = 1700; // tempo com a logo na tela
-const FADE_MS = 450; // saída suave
+import { useCallback, useEffect, useRef, useState } from 'react';
+import { SYMBOL_D, WORDMARK_D } from './brandPaths.js';
 
 /**
- * Tela de abertura ao entrar na plataforma: logo branca animada sobre o azul da marca.
- * Some sozinha (onDone). Com "reduzir movimento" ativo no sistema, só aparece rapidamente, sem animação.
+ * Abertura animada ao entrar na plataforma (a mesma do protótipo).
+ * Some sozinha em ~2,9 s; dá para pular com o botão "Pular" ou clicando em qualquer lugar.
+ * Com "reduzir movimento" ativo no sistema, aparece por 1 s sem animação.
+ * As animações ficam em index.css (classes .splash-*).
  */
 export default function SplashScreen({ onDone }) {
   const [leaving, setLeaving] = useState(false);
+  const finished = useRef(false);
+
+  const finish = useCallback(
+    (delay) => {
+      if (finished.current) return;
+      finished.current = true;
+      setLeaving(true);
+      setTimeout(onDone, delay);
+    },
+    [onDone],
+  );
 
   useEffect(() => {
     const reduced = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    const show = reduced ? 500 : SHOW_MS;
-    const fade = reduced ? 0 : FADE_MS;
-    const t1 = setTimeout(() => setLeaving(true), show);
-    const t2 = setTimeout(onDone, show + fade);
-    return () => {
-      clearTimeout(t1);
-      clearTimeout(t2);
-    };
-  }, [onDone]);
+    const timer = setTimeout(() => finish(reduced ? 200 : 600), reduced ? 1000 : 2900);
+    return () => clearTimeout(timer);
+  }, [finish]);
 
   return (
     <div
+      className={`splash fixed inset-0 z-[100] flex flex-col items-center justify-center ${leaving ? 'splash-leave' : ''}`}
+      onClick={() => finish(450)}
       role="status"
       aria-label="Carregando Lastro.Labs"
-      className={`fixed inset-0 z-[60] flex flex-col items-center justify-center bg-lastro-navy ${
-        leaving ? 'pointer-events-none animate-splash-out' : ''
-      }`}
     >
-      <img src={logoWhiteUrl} alt="" className="w-[220px] animate-splash-logo motion-reduce:animate-none sm:w-[300px]" />
-      <span className="mt-10 block h-0.5 w-28 overflow-hidden rounded-full bg-white/15" aria-hidden="true">
-        <span className="block h-full w-1/2 animate-splash-bar rounded-full bg-lastro-cyan motion-reduce:animate-none" />
-      </span>
+      <div className="splash-mark-wrap flex flex-col items-center">
+        <div className="relative">
+          <span className="splash-ring" aria-hidden="true" />
+          <svg className="splash-mark h-[88px] w-[96px] sm:h-[104px] sm:w-[113px]" viewBox="-2 -2 118 109" aria-hidden="true">
+            <path className="splash-path" d={SYMBOL_D} pathLength="1" />
+          </svg>
+        </div>
+        <svg className="splash-word mt-7 h-6 w-auto sm:h-7" viewBox="458 631 190 31" aria-hidden="true">
+          {WORDMARK_D.map((d, i) => (
+            <path key={i} d={d} fill="#fff" />
+          ))}
+        </svg>
+      </div>
+
+      <button
+        type="button"
+        onClick={(e) => {
+          e.stopPropagation();
+          finish(450);
+        }}
+        className="splash-skip absolute bottom-6 right-6 rounded-full border border-white/40 px-4 py-1.5 text-xs font-medium text-white/90 transition hover:bg-white/10"
+      >
+        Pular
+      </button>
     </div>
   );
 }
