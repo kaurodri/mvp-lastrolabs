@@ -5,23 +5,22 @@ const SESSION_KEY = 'lastro-labs-demo:session';
 const REMEMBER_KEY = 'lastro-labs-demo:remembered';
 const AuthContext = createContext(null);
 
+// A sessão vale só enquanto a aba está aberta (sessionStorage): ao reabrir a plataforma, a pessoa
+// cai na tela de login. O "Lembrar" não mantém a pessoa logada, apenas preenche os campos (abaixo).
 function readSession() {
-  for (const storage of [() => localStorage, () => sessionStorage]) {
-    try {
-      const raw = storage().getItem(SESSION_KEY);
-      if (raw) return JSON.parse(raw);
-    } catch {
-      /* armazenamento indisponível */
-    }
+  try {
+    localStorage.removeItem(SESSION_KEY); // sessões salvas por versões anteriores não entram mais direto
+    const raw = sessionStorage.getItem(SESSION_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null; /* armazenamento indisponível */
   }
-  return null;
 }
 
-function writeSession(session, remember) {
+function writeSession(session) {
   try {
-    localStorage.removeItem(SESSION_KEY);
-    sessionStorage.removeItem(SESSION_KEY);
-    if (session) (remember ? localStorage : sessionStorage).setItem(SESSION_KEY, JSON.stringify(session));
+    if (session) sessionStorage.setItem(SESSION_KEY, JSON.stringify(session));
+    else sessionStorage.removeItem(SESSION_KEY);
   } catch {
     /* sem persistência: a sessão vale só até recarregar */
   }
@@ -55,7 +54,7 @@ export function AuthProvider({ children }) {
 
   const login = useCallback(async ({ email, senha, perfil, lembrar }) => {
     const next = await api.login({ email, senha, perfil });
-    writeSession(next, lembrar);
+    writeSession(next);
     writeRemembered(lembrar ? { email: next.email, perfil } : null);
     setSession(next);
     setSplash(true);
@@ -63,7 +62,7 @@ export function AuthProvider({ children }) {
   }, []);
 
   const logout = useCallback(() => {
-    writeSession(null, false);
+    writeSession(null);
     setSession(null);
     setSplash(false);
   }, []);
