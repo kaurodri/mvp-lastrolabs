@@ -6,7 +6,8 @@ import PasswordInput from '../components/auth/PasswordInput.jsx';
 import Button from '../components/ui/Button.jsx';
 import TextInput from '../components/ui/TextInput.jsx';
 import { useToast } from '../components/ui/Toast.jsx';
-import { readRemembered, useAuth } from '../context/AuthContext.jsx';
+import { useAuth } from '../context/AuthContext.jsx';
+import { DEMO_LOGINS } from '../mocks/seed.js';
 import { HOME } from '../utils/routes.js';
 import logoMarkUrl from '../assets/logo-mark.svg';
 
@@ -18,16 +19,25 @@ export default function LoginPage() {
   const navigate = useNavigate();
   const notify = useToast();
 
-  // Se a pessoa marcou "Lembrar" antes, o perfil e o e-mail já vêm preenchidos (a senha nunca é guardada).
-  const [remembered] = useState(readRemembered);
-  const [perfil, setPerfil] = useState(remembered?.perfil ?? 'medico');
-  const [email, setEmail] = useState(remembered?.email ?? '');
-  const [senha, setSenha] = useState('');
+  // Os campos já vêm preenchidos com os dados fictícios da demo (ver DEMO_LOGINS em mocks/seed.js).
+  const [perfil, setPerfil] = useState('medico');
+  const [email, setEmail] = useState(DEMO_LOGINS.medico.email);
+  const [senha, setSenha] = useState(DEMO_LOGINS.medico.senha);
   const [lembrar, setLembrar] = useState(true);
   const [error, setError] = useState(null);
   const [loading, setLoading] = useState(false);
 
   if (session) return <Navigate to={HOME[session.perfil]} replace />;
+
+  // Ao trocar de perfil, os exemplos acompanham, a menos que a pessoa já tenha editado os campos.
+  const changePerfil = (next) => {
+    const current = DEMO_LOGINS[perfil];
+    if (email === current.email && senha === current.senha) {
+      setEmail(DEMO_LOGINS[next].email);
+      setSenha(DEMO_LOGINS[next].senha);
+    }
+    setPerfil(next);
+  };
 
   const submit = async (e) => {
     e.preventDefault();
@@ -38,7 +48,7 @@ export default function LoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const next = await login({ email, senha, perfil, lembrar });
+      const next = await login({ email, senha, perfil });
       navigate(HOME[next.perfil], { replace: true });
     } catch (err) {
       setError(err.message || 'Não foi possível entrar.');
@@ -62,7 +72,7 @@ export default function LoginPage() {
         <Logo className="mx-auto h-12 w-auto sm:h-14" />
 
         <form onSubmit={submit} noValidate className="mt-12 sm:mt-16">
-          <RoleToggle value={perfil} onChange={setPerfil} />
+          <RoleToggle value={perfil} onChange={changePerfil} />
 
           <div className="mt-8">
             <label htmlFor="login-email" className={LABEL}>

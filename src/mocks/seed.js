@@ -17,6 +17,13 @@ const { PENDENTE, EM_ANALISE, ERRO, ENVIADO, APROVADO } = STATUS;
 const hist = (exame, data, laudo, local, medico) => ({ exame, data, laudo, local, medico });
 const file = (nome, tamanho) => ({ nome, tamanho });
 
+// Credenciais fictícias que já vêm preenchidas na tela de login da demo.
+// (A API simulada aceita qualquer e-mail válido com qualquer senha preenchida.)
+export const DEMO_LOGINS = {
+  medico: { email: 'medica@lastro.labs', senha: 'demo-lastro-2026' },
+  operadora: { email: 'operadora@lastro.labs', senha: 'demo-lastro-2026' },
+};
+
 export const SEED = {
   profiles: {
     medico: { perfil: 'medico', nome: 'Dra. Camila Rezende', iniciais: 'CR', detalhe: 'Médica · Radiologia' },
