@@ -25,12 +25,24 @@ const clone = (v) => JSON.parse(JSON.stringify(v));
 const wait = () =>
   new Promise((r) => setTimeout(r, LATENCY_MS.min + Math.random() * (LATENCY_MS.max - LATENCY_MS.min)));
 
+/** Os dados salvos só valem se tiverem o formato atual (lista de solicitações completas). */
+const isValidSaved = (s) =>
+  !!s &&
+  Array.isArray(s.requests) &&
+  Array.isArray(s.examTypes) &&
+  s.requests.every((r) => r && typeof r.status === 'string' && Array.isArray(r.historico));
+
 function loadDb() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY);
-    if (raw) return JSON.parse(raw);
+    if (raw) {
+      const saved = JSON.parse(raw);
+      // Os perfis são fixos: vêm sempre do seed. Só solicitações e tipos de exame ficam salvos.
+      if (isValidSaved(saved)) return { ...clone(SEED), requests: saved.requests, examTypes: saved.examTypes };
+      localStorage.removeItem(STORAGE_KEY); // formato antigo ou corrompido: volta aos dados originais
+    }
   } catch {
-    /* localStorage indisponível (aba anônima, bloqueio): usa só memória */
+    /* localStorage indisponível (aba anônima, bloqueio) ou JSON inválido: usa os dados originais */
   }
   return clone(SEED);
 }
